@@ -12,7 +12,7 @@ import java.util.Date;
 import java.util.Timer;
 import java.util.TimerTask;
 
-
+//Background service example
 public class MyService extends Service {
     // constant
     public static final long NOTIFY_INTERVAL = 10 * 1000; // 10 seconds
