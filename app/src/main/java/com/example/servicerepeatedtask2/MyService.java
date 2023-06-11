@@ -1,7 +1,11 @@
 package com.example.servicerepeatedtask2;
 
+import android.app.Notification;
+import android.app.NotificationChannel;
+import android.app.NotificationManager;
 import android.app.Service;
 import android.content.Intent;
+import android.os.Build;
 import android.os.Handler;
 import android.os.IBinder;
 import android.os.Looper;
@@ -27,9 +31,7 @@ public class MyService extends Service {
         return null;
     }
 
-    @Override
-    public void onCreate() {
-        // cancel if already existed
+    public int onStartCommand(Intent intent, int flags, int startId) {
         if (mTimer != null) {
             mTimer.cancel();
         } else {
@@ -38,8 +40,30 @@ public class MyService extends Service {
         }
         // schedule task
         mTimer.scheduleAtFixedRate(new TimeDisplayTimerTask(), 0, NOTIFY_INTERVAL);
-    }
 
+        final String CHANNELID = "Foreground Service ID";
+        NotificationChannel channel = null;
+        if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.O) {
+            channel = new NotificationChannel(
+                    CHANNELID,
+                    CHANNELID,
+                    NotificationManager.IMPORTANCE_LOW
+            );
+        }
+
+        if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.O) {
+            getSystemService(NotificationManager.class).createNotificationChannel(channel);
+        }
+        Notification.Builder notification = null;
+        if (android.os.Build.VERSION.SDK_INT >= android.os.Build.VERSION_CODES.O) {
+            notification = new Notification.Builder(this, CHANNELID)
+                    .setContentText("Service is running")
+                    .setContentTitle("Service enabled")
+                    .setSmallIcon(R.drawable.ic_launcher_background);
+        }
+        startForeground(1001, notification.build());
+        return super.onStartCommand(intent, flags, startId);
+    }
     @Override
     public void onDestroy() {
 
