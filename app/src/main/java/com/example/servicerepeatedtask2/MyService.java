@@ -4,12 +4,15 @@ import android.app.Notification;
 import android.app.NotificationChannel;
 import android.app.NotificationManager;
 import android.app.Service;
+import android.content.Context;
 import android.content.Intent;
 import android.os.Build;
 import android.os.Handler;
 import android.os.IBinder;
 import android.os.Looper;
 import android.widget.Toast;
+
+import androidx.core.app.NotificationManagerCompat;
 
 import java.text.SimpleDateFormat;
 import java.util.Date;
@@ -19,7 +22,7 @@ import java.util.TimerTask;
 //Background service example
 public class MyService extends Service {
     // constant
-    public static final long NOTIFY_INTERVAL = 10 * 1000; // 10 seconds
+    public static final long NOTIFY_INTERVAL = 30*60 * 1000; // 30 seconds
 
     // run on another Thread to avoid crash
     private Handler mHandler = new Handler(Looper.getMainLooper());
@@ -74,6 +77,7 @@ public class MyService extends Service {
     }
 
     class TimeDisplayTimerTask extends TimerTask {
+        private int counter=0;
 
         @Override
         public void run() {
@@ -85,8 +89,34 @@ public class MyService extends Service {
                     // display toast
                     Toast.makeText(getApplicationContext(), getDateTime(),
                             Toast.LENGTH_LONG).show();
-                }
 
+                    final String CHANNELID = "Foreground Service Notification";
+
+                    NotificationChannel channel = null;
+                    if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.O) {
+                        channel = new NotificationChannel(
+                                CHANNELID,
+                                CHANNELID,
+                                NotificationManager.IMPORTANCE_DEFAULT
+                        );
+                    }
+
+                    if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.O) {
+                        getSystemService(NotificationManager.class).createNotificationChannel(channel);
+                    }
+                    Notification.Builder builder = null;
+                    if (android.os.Build.VERSION.SDK_INT >= android.os.Build.VERSION_CODES.O) {
+                        builder = new Notification.Builder(getApplicationContext(), CHANNELID)
+                                .setContentText("Service is running"+ counter)
+                                .setContentTitle("Allarme meteo")
+                                .setSmallIcon(R.drawable.ic_launcher_background);
+                    }
+
+                    NotificationManagerCompat mNotificationManager = NotificationManagerCompat.from(getApplicationContext());
+                    mNotificationManager.notify(12, builder.build());
+                    counter++;
+
+                }
 
             });
         }
